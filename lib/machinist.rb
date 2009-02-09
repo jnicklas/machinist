@@ -28,7 +28,7 @@ module Machinist
         @blueprint
       end
   
-      def make(attributes = {}, &block)
+      def make!(attributes = {}, &block)
         lathe = Lathe.run(self.new, attributes)
         unless Machinist.nerfed?
           lathe.object.save!
@@ -42,8 +42,8 @@ module Machinist
         lathe.assigned_attributes
       end
           
-      def make_unsaved(attributes = {})
-        returning(Machinist.with_save_nerfed { make(attributes) }) do |object|
+      def make(attributes = {})
+        returning(Machinist.with_save_nerfed { make!(attributes) }) do |object|
           yield object if block_given?
         end
       end
@@ -51,7 +51,7 @@ module Machinist
   end
   
   module ActiveRecordAssociationExtensions
-    def make(attributes = {}, &block)
+    def make!(attributes = {}, &block)
       lathe = Machinist::Lathe.run(self.build, attributes)
       unless Machinist.nerfed?
         lathe.object.save!
@@ -111,7 +111,7 @@ module Machinist
         yield
       elsif args.first.is_a?(Hash) || args.empty?
         klass = @object.class.reflect_on_association(symbol).class_name.constantize
-        klass.make(args.first || {})
+        klass.make!(args.first || {})
       else
         args.first
       end
